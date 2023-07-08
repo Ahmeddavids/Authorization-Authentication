@@ -1,4 +1,4 @@
-const { checkUser } = require('../controllers/authorization');
+const { checkUser, superAuth } = require('../controllers/authorization');
 const { newUser, userLogin, getAll, updateAdmin, getOne, updateUser, deleteUser } = require('../controllers/userController');
 
 const router = require('express').Router();
@@ -18,7 +18,7 @@ router.route('/:adminId/getall').get(checkUser, getAll)
 
 router.route('/:adminId/getone/:userId').get(checkUser, getOne)
 
-router.route('/:adminId/updateadmin/:userId').patch(checkUser,updateAdmin)
+router.route('/:adminId/updateadmin/:userId').patch(superAuth,updateAdmin)
 
 router.route('/:adminId/updateuser/:userId').patch(checkUser,updateUser)
 

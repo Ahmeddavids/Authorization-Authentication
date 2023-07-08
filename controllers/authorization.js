@@ -37,7 +37,7 @@ const authentication = async (req, res, next) => {
 //     authentication(req, res, async () => {
 //         const adminId = req.params.id
 //         const user = await userModel.findById(adminId)
-//         if(user.isAdmin) {
+//         if(user.isAdmin || user.isSuperAdmin) {
 //             next()
 //         } else {
 //             res.status(400).json({
@@ -51,7 +51,7 @@ const authentication = async (req, res, next) => {
 // Another method to check
 const checkUser = (req, res, next) => {
     authentication(req, res, async () => {
-        if(req.user.isAdmin) {
+        if(req.user.isAdmin || req.user.isSuperAdmin) {
             next()
         } else {
             res.status(400).json({
@@ -64,7 +64,22 @@ const checkUser = (req, res, next) => {
 
 
 
+const superAuth = (req, res, next) => {
+    authentication(req, res, async () => {
+        if(req.user.isSuperAdmin) {
+            next()
+        } else {
+            res.status(400).json({
+                message: 'You are not authorized to perform this action'
+            })
+        }
+    })
+}
+
+
+
 
 module.exports = {
-    checkUser
+    checkUser,
+    superAuth
 }

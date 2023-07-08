@@ -18,7 +18,8 @@ const newUser = async (req, res) => {
         const token = jwt.sign({
             id: user._id,
             password: user.password,
-            isAdmin: user.isAdmin
+            isAdmin: user.isAdmin,
+            isSuperAdmin: user.isSuperAdmin
         },
             process.env.SECRETEKEY, { expiresIn: "7 days" })
 
@@ -64,7 +65,9 @@ const userLogin = async (req, res) => {
         const token = jwt.sign({
             id: checkUser._id,
             password: checkUser.password,
-            isAdmin: checkUser.isAdmin
+            isAdmin: checkUser.isAdmin,
+            isSuperAdmin: checkUser.isSuperAdmin
+
         },
             process.env.SECRETEKEY, { expiresIn: "7 days" })
 
@@ -97,7 +100,7 @@ const getAll = async (req, res) => {
             })
         } else {
             res.status(200).json({
-                message: 'Find all users in this databse below',
+                message: 'Find all users in this database below',
                 data: allUser
             })
         }
@@ -122,7 +125,7 @@ const getOne = async (req, res) => {
             })
         } else {
             res.status(200).json({
-                message: 'Find all users in this databse below',
+                message: 'Find user details below',
                 data: user
             })
         }
@@ -140,7 +143,6 @@ const updateAdmin = async (req, res) => {
     try {
         const userId = req.params.userId;
 
-        console.log(userId);
         const makeAdmin = await userModel.findByIdAndUpdate(userId, { isAdmin: true }, { new: true })
 
         if (!userId) {
@@ -202,6 +204,10 @@ const deleteUser = async (req, res) => {
             res.status(200).json({
                 message: `User with id: ${userId} not found`,
 
+            })
+        } else if (user.isSuperAdmin) {
+            res.status(400).json({
+                failed: 'You are not Authorized to perform this action'
             })
         } else {
             const deletedUser = await userModel.findByIdAndDelete(userId)
