@@ -3,10 +3,28 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 
-// user sing up
-const newUser = async (req, res) => {
+// user sign up
+const userSignUp = async (req, res) => {
     try {
         const { username, email, password } = req.body
+
+        const usernameExists = await userModel.findOne({ username })
+        
+        if (usernameExists) {
+            return res.status(400).json({
+                message: `Username already exist.`
+            })
+        }
+
+        const emailExists = await userModel.findOne({ email })
+        
+        if (emailExists) {
+            return res.status(400).json({
+                message: `Email already exist.`
+            })
+        }
+
+
         const salt = bcrypt.genSaltSync(10)
         const hashedPassword = bcrypt.hashSync(password, salt)
         const data = {
@@ -76,8 +94,12 @@ const userLogin = async (req, res) => {
         checkUser.save()
 
         res.status(200).json({
-            Success: 'Login successful',
-            data: [checkUser._id, checkUser.username, checkUser.token]
+            message: 'Login successful',
+            data: 
+                {id: checkUser._id, 
+                username: checkUser.username, 
+                token: checkUser.token}
+            
         })
 
     } catch (error) {
@@ -100,7 +122,7 @@ const getAll = async (req, res) => {
             })
         } else {
             res.status(200).json({
-                message: 'Find all users in this database below',
+                message: `These are the users in this database and they are ${allUser.length} in number`,
                 data: allUser
             })
         }
@@ -119,7 +141,7 @@ const getOne = async (req, res) => {
         const user = await userModel.findById(req.params.userId);
 
         if (!user) {
-            res.status(200).json({
+            res.status(404).json({
                 message: `User with id: ${req.params.userId} not found`,
 
             })
@@ -170,12 +192,31 @@ const updateUser = async (req, res) => {
         const { username, email } = req.body;
 
         const user = await userModel.findById(userId)
+
+        const usernameExists = await userModel.findOne({ username })
+        
         if (!user) {
             return res.status(200).json({
                 message: `User with id: ${userId} not found`,
 
             })
         }
+
+        if (usernameExists) {
+            return res.status(400).json({
+                message: `Username already exist.`
+            })
+        }
+
+        const emailExists = await userModel.findOne({ email })
+        
+        if (emailExists) {
+            return res.status(400).json({
+                message: `Email already exist.`
+            })
+        }
+
+
         const data = {
             username: username || user.username,
             email: email || user.email
@@ -224,7 +265,28 @@ const deleteUser = async (req, res) => {
 }
 
 
-
+const signOut = async (req, res) => {
+    try {
+      const userId = req.user.id;
+  
+      // Update the user's token to null
+      const user = await userModel.findByIdAndUpdate(userId, { token: null }, { new: true });
+  
+      if (!user) {
+        return res.status(404).json({
+          message: 'User not found',
+        });
+      }
+      res.status(200).json({
+        message: 'User logged out successfully',
+      });
+    } catch (error) {
+      res.status(500).json({
+        Error: error.message,
+      });
+    }
+  };
+  
 
 
 
@@ -233,11 +295,12 @@ const deleteUser = async (req, res) => {
 
 
 module.exports = {
-    newUser,
+    userSignUp,
     userLogin,
     getAll,
     getOne,
     updateAdmin,
     updateUser,
-    deleteUser
+    deleteUser,
+    signOut
 }

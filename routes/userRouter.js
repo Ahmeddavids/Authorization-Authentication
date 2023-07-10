@@ -1,5 +1,5 @@
-const { checkUser, superAuth } = require('../controllers/authorization');
-const { newUser, userLogin, getAll, updateAdmin, getOne, updateUser, deleteUser } = require('../controllers/userController');
+const { checkUser, superAuth, authenticate } = require('../middleware/authorization');
+const { userSignUp, userLogin, getAll, updateAdmin, getOne, updateUser, deleteUser, signOut } = require('../controllers/userController');
 
 const router = require('express').Router();
 
@@ -7,22 +7,33 @@ router.route('/api').get((req, res) => {
     res.json('WELCOME TO MY AUTHENTICATION API HOMEPAGE')
 })
 
-router.route('/signup').post(newUser)
+router.route('/signup').post(userSignUp)
 
 router.route('/login').post(userLogin)
 
-// in real world you are not to allow get all without being an admin
-router.route('/getall').get(getAll)
+router.route('/logout/:id').post(authenticate, signOut)
 
-router.route('/:adminId/getall').get(checkUser, getAll)
+router.route('/getall')
+.get(getAll)
+// in real world, you are not to allow (get all) without being an admin
 
-router.route('/:adminId/getone/:userId').get(checkUser, getOne)
+router.route('/:adminId/getall')
+.get(checkUser, getAll)
 
-router.route('/:adminId/updateadmin/:userId').patch(superAuth,updateAdmin)
+router.route('/:adminId/getone/:userId')
+.get(checkUser, getOne)
 
-router.route('/:adminId/updateuser/:userId').patch(checkUser,updateUser)
+router.route('/:adminId/updateadmin/:userId')
+.patch(superAuth,updateAdmin)
 
-router.route('/:adminId/deleteuser/:userId').delete(checkUser,deleteUser)
+router.route('/:adminId/updateuser/:userId')
+.patch(checkUser,updateUser)
+
+router.route('/updateuser/:userId')
+.patch(updateUser)
+
+router.route('/:adminId/deleteuser/:userId')
+.delete(checkUser,deleteUser)
 
 
 

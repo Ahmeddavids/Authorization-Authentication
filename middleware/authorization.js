@@ -32,6 +32,37 @@ const authentication = async (req, res, next) => {
 }
 
 
+// To authenticate if a user is signed in
+
+const authenticate = async (req, res, next) => {
+    try {
+        const user = await userModel.findById(req.params.id)
+        const userToken = user.token
+
+        if(!userToken) {
+            return res.status(400).json({
+                message: 'No Authorization found'
+            })
+        }
+
+        await jwt.verify(userToken, process.env.SECRETEKEY, (err, payLoad) => {
+
+            if (err) {
+                return res.json(err.message)
+            } else {
+                req.user = payLoad
+                next()
+            }
+        })
+
+    } catch (error) {
+        res.status(500).json({
+            Error: error.message
+        })
+    }
+}
+
+
 // to check if user is an admin
 // const checkUser = (req, res, next) => {
 //     authentication(req, res, async () => {
@@ -48,7 +79,7 @@ const authentication = async (req, res, next) => {
 // }
 
 
-// Another method to check
+// Another method to authorize
 const checkUser = (req, res, next) => {
     authentication(req, res, async () => {
         if(req.user.isAdmin || req.user.isSuperAdmin) {
@@ -63,7 +94,7 @@ const checkUser = (req, res, next) => {
 
 
 
-
+// Super admin authorization
 const superAuth = (req, res, next) => {
     authentication(req, res, async () => {
         if(req.user.isSuperAdmin) {
@@ -81,5 +112,6 @@ const superAuth = (req, res, next) => {
 
 module.exports = {
     checkUser,
-    superAuth
+    superAuth,
+    authenticate
 }
