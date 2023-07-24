@@ -15,6 +15,14 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true['Password is required'],
     },
+    records: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Record"
+    }],
+    isVerified: {
+        type: Boolean,
+        default: false
+    },
     token: {
         type: String
     },
@@ -29,6 +37,6 @@ const userSchema = new mongoose.Schema({
 }, {timestamps: true});
 
 
-const userModel = mongoose.model('user', userSchema);
+const userModel = mongoose.model('Users', userSchema);
 
 module.exports = userModel

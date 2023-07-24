@@ -5,7 +5,14 @@ const userModel = require('../models/userModel');
 // To authenticate a user token in the database
 const authentication = async (req, res, next) => {
     try {
-        const user = await userModel.findById(req.params.adminId)
+        const user = await userModel.findById(req.params.adminId);
+
+        if(!user) {
+            return res.status(400).json({
+                message: 'Admin to authorize not found'
+            })
+        }
+
         const userToken = user.token
 
         if(!userToken) {
@@ -14,7 +21,7 @@ const authentication = async (req, res, next) => {
             })
         }
 
-        await jwt.verify(userToken, process.env.SECRETEKEY, (err, payLoad) => {
+        await jwt.verify(userToken, process.env.JWT_SECRET, (err, payLoad) => {
 
             if (err) {
                 return res.json(err.message)
@@ -36,7 +43,13 @@ const authentication = async (req, res, next) => {
 
 const authenticate = async (req, res, next) => {
     try {
-        const user = await userModel.findById(req.params.id)
+        const user = await userModel.findById(req.params.userId)
+
+        if(!user) {
+            return res.status(404).json({
+                message: 'User to authorize not found'
+            })
+        }
         const userToken = user.token
 
         if(!userToken) {
@@ -45,7 +58,7 @@ const authenticate = async (req, res, next) => {
             })
         }
 
-        await jwt.verify(userToken, process.env.SECRETEKEY, (err, payLoad) => {
+        await jwt.verify(userToken, process.env.JWT_SECRET, (err, payLoad) => {
 
             if (err) {
                 return res.json(err.message)
